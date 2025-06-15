@@ -1,0 +1,27 @@
+@"
+# Virtual Environment
+venv/
+
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Django
+*.sqlite3
+*.log
+
+# Environment variables
+.env
+
+# Migrations
+**/migrations/
+**/migrations/__pycache__/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+"@ > .gitignore

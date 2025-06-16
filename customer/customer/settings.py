@@ -28,6 +28,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-$_b_vij&=_h*5)b(^bqd#2_fvc&l@#88aq-*f2o2a2+ur-r1y3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@yourdomain.com'
+
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -45,6 +49,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'AdminAccounts',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+# 'rest_framework_simplejwt.authentication.JWTAuthentication',
 
 AUTH_USER_MODEL = 'AdminAccounts.AdminUser'
 

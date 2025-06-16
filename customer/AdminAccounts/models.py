@@ -20,7 +20,7 @@ class AdminUserManager(BaseUserManager):
 
 
 class AdminUser(AbstractBaseUser, PermissionsMixin):
-    registration_token = models.CharField(max_length=12, unique=True, editable=False, blank=True)
+    registration_token = models.CharField(max_length=12, unique=True, editable=False, blank=False)
     
     company_name = models.CharField(max_length=255)
     company_email = models.EmailField(unique=True)
@@ -33,7 +33,8 @@ class AdminUser(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=20)
 
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = "company_email"

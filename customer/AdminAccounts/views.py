@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from rest_framework import generics
+from .models import AdminUser
+from .serializers import AdminUserRegistrationSerializer
 
-# Create your views here.
+class AdminUserRegisterView(generics.CreateAPIView):
+    queryset = AdminUser.objects.all()
+    serializer_class = AdminUserRegistrationSerializer

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils import timezone
+from datetime import timedelta
 import uuid
 
 class AdminUserManager(BaseUserManager):
@@ -26,8 +27,6 @@ class AdminUser(AbstractBaseUser, PermissionsMixin):
     company_email = models.EmailField(unique=True)
     address1 = models.CharField(max_length=255)
     address2 = models.CharField(max_length=255, blank=True, null=True)
-    street = models.CharField(max_length=255)
-    town = models.CharField(max_length=100)
     region = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
@@ -52,3 +51,17 @@ class AdminUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.company_name
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(AdminUser, on_delete=models.CASCADE)
+    token = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timezone.timedelta(hours=1)
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = str(uuid.uuid4()).replace("-", "")
+        super().save(*args, **kwargs)

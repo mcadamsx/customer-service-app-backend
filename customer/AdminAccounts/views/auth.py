@@ -7,13 +7,12 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from datetime import timedelta
-from .models import AdminUser, PasswordResetToken
-from .serializers import (
+from ..models import AdminUser, PasswordResetToken
+from AdminAccounts.serializers.auth import (
     AdminUserRegistrationSerializer,
     ForgotPasswordSerializer,
     ResetPasswordSerializer
 )
-
 User = get_user_model()
 
 

@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import AdminUserRegisterView, VerifyAdminEmailView
-from .views import AdminLoginView
-from .views import ForgotPasswordView, ResetPasswordView
+from .views.auth import AdminUserRegisterView, VerifyAdminEmailView
+from .views.auth import AdminLoginView
+from .views.auth import ForgotPasswordView, ResetPasswordView
 
 urlpatterns = [
     path('register/', AdminUserRegisterView.as_view(), name='admin-register'),

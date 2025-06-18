@@ -16,9 +16,9 @@ from AdminAccounts.serializers.auth import (
 User = get_user_model()
 
 
-# -------------------------------
+
 # Registration & Email Verification
-# -------------------------------
+
 class AdminUserRegisterView(generics.CreateAPIView):
     queryset = AdminUser.objects.all()
     serializer_class = AdminUserRegistrationSerializer
@@ -48,9 +48,9 @@ class VerifyAdminEmailView(APIView):
             return Response({"message": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# -------------------------------
+
 # Login View
-# -------------------------------
+
 class AdminLoginView(APIView):
     def post(self, request):
         email = request.data.get("company_email")
@@ -85,9 +85,9 @@ class AdminLoginView(APIView):
         })
 
 
-# -------------------------------
+
 # Password Reset Flow
-# -------------------------------
+
 class ForgotPasswordView(APIView):
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)

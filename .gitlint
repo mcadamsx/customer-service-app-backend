@@ -1,0 +1,5 @@
+[general]
+ignore-merge-commits=true
+
+[title-match-regex]
+regex=^(feat|fix|doc|chore|test|refactor): .+

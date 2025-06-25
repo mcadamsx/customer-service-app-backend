@@ -72,7 +72,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
             "Password Reset Request",
 
             f"Hi {user.company_name},\n\n"
-            f"Click the link below to reset your password:\n{reset_url}\n\"n"
+            f"Click the link below to reset your password:\n{reset_url}\n"
             f"This link will expire in 1 hour.",
             settings.DEFAULT_FROM_EMAIL,
             [email],

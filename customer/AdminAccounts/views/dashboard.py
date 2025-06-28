@@ -19,28 +19,32 @@ class AdminDashboardView(APIView):
         current_year = today.year
 
         verified_customers = Customer.objects.filter(is_online=True).count()
-        new_customers = Customer.objects.filter(date_joined__gte=one_week_ago).count()
+        new_customers = (
+            Customer.objects.filter(date_joined__gte=one_week_ago).count())
         open_tickets = Ticket.objects.filter(status="open").count()
-        sub_admin_count = AdminUser.objects.filter(is_staff=True, is_superuser=False).count()
+        sub_admin_count = AdminUser.objects.filter(is_staff=True,
+                                                   is_superuser=False).count()
 
         # Top services based on how many customers use them
-        top_services = Service.objects.annotate(
-    customer_count=Count('customers')
-).order_by('-customer_count')[:5]
-
+        top_services = (
+            Service.objects.annotate(customer_count=Count
+                                     ('customers')).order_by
+                                    ('-customer_count')[:5])
         top_services_list = [service.name for service in top_services]
 
         # Customer locations
-        locations = Customer.objects.values_list('location', flat=True).distinct()
+        locations = Customer.objects.values_list('location',
+                                                 flat=True).distinct()
 
         # Yearly activity (e.g., new customers per month)
         from django.db.models.functions import TruncMonth
-        monthly_data = Customer.objects.filter(date_joined__year=current_year) \
+        monthly_data = Customer.objects.filter(date_joined__year=current_year)\
             .annotate(month=TruncMonth('date_joined')) \
             .values('month') \
             .annotate(count=Count('id')) \
             .order_by('month')
-        yearly_activity = {item['month'].strftime("%B"): item['count'] for item in monthly_data}
+        yearly_activity = {item['month'].strftime("%B"): item['count']
+                           for item in monthly_data}
 
         dashboard_data = {
             "verified_customers": verified_customers,
@@ -51,8 +55,5 @@ class AdminDashboardView(APIView):
             "customer_locations": list(locations),
             "yearly_activity": yearly_activity
         }
-        
-        
-
         serializer = AdminDashboardSerializer(dashboard_data)
         return Response(serializer.data)

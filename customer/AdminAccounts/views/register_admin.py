@@ -102,4 +102,3 @@ class ResetPasswordView(APIView):
 
             return Response({"detail": "Password reset successful."})
         return Response(serializer.errors, status=400)
-

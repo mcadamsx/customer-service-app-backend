@@ -41,6 +41,10 @@ class AdminUser(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=20)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    profile_photo = (
+        models.ImageField(upload_to='profile_photos/', blank=True, null=True))
+    company_description = (
+        models.TextField(blank=True, help_text="Max 100 words"))
 
     objects = AdminUserManager()
 

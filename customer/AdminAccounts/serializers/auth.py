@@ -13,8 +13,9 @@ class AdminRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdminUser
         fields = [
-            'company_name', 'company_email', 'address1', 'address2', 'region',
-            'country', 'phone', 'password', 'repeat_password', 'token'
+            'id', 'company_name', 'company_email', 'address1', 'address2',
+            'region', 'country', 'phone', 'password',
+            'repeat_password', 'token',
         ]
 
     def validate(self, attrs):

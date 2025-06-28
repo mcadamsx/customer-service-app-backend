@@ -7,6 +7,7 @@ from .views.register_admin import (
     ResetPasswordView,
 )
 from .views.dashboard import AdminDashboardView
+from .views.profile import AdminProfileUpdateView
 
 
 urlpatterns = [
@@ -18,5 +19,8 @@ urlpatterns = [
     path('reset-password/<str:token>/', ResetPasswordView.as_view(),
          name='reset-password'),
     path('dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
+    path('profile/', AdminProfileUpdateView.as_view(),
+         name='admin-profile'),
+
 
 ]

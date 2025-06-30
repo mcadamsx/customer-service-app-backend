@@ -4,14 +4,14 @@ from django.contrib.auth.models import (AbstractBaseUser,
 from django.utils import timezone
 from datetime import timedelta
 import uuid
-import random
+import secrets
 import string
 
 
 def generate_registration_token():
     prefix = 'ADM'
-    suffix = (
-        ''.join(random.choices(string.ascii_uppercase + string.digits, k=9)))
+    charset = string.ascii_uppercase + string.digits
+    suffix = ''.join(secrets.choice(charset) for _ in range(9))
     return prefix + suffix
 
 

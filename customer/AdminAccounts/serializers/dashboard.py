@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+
 class AdminDashboardSerializer(serializers.Serializer):
     verified_customers = serializers.IntegerField()
     new_customers = serializers.IntegerField()

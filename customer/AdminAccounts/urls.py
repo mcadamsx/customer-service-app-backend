@@ -1,16 +1,22 @@
 from django.urls import path
-from .views.auth import AdminUserRegisterView, VerifyAdminEmailView
-from .views.auth import AdminLoginView
-from .views.auth import ForgotPasswordView, ResetPasswordView
+from .views.invite_admin import InviteAdminUserView
+from .views.register_admin import RegisterAdminUserView
+from .views.register_admin import (
+    AdminLoginView,
+    ForgotPasswordView,
+    ResetPasswordView,
+)
 from .views.dashboard import AdminDashboardView
 
+
 urlpatterns = [
-    path('register/', AdminUserRegisterView.as_view(), name='admin-register'),
+    path('invite/', InviteAdminUserView.as_view(), name='invite-admin'),
+    path('register/', RegisterAdminUserView.as_view(), name='register-admin'),
     path('login/', AdminLoginView.as_view(), name='admin_login'),
-    path('verify-email/<str:token>/', VerifyAdminEmailView.as_view(), name='admin-verify-email'),
-    path('forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
-    path('reset-password/<str:token>/', ResetPasswordView.as_view(), name='reset-password'),
-     path('dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
-    
-    
+    path('forgot-password/', ForgotPasswordView.as_view(),
+         name='forgot-password'),
+    path('reset-password/<str:token>/', ResetPasswordView.as_view(),
+         name='reset-password'),
+    path('dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
+
 ]

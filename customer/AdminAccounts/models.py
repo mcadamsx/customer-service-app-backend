@@ -114,6 +114,29 @@ class Customer(models.Model):
         return self.full_name
 
 
+class Payment(models.Model):
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="payments"
+    )
+    service = models.ForeignKey(
+        Service,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10, default="USD")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return (
+            f"Payment of {self.amount} {self.currency}"
+            f"by {self.customer.full_name}"
+            )
+
+
 class Ticket(models.Model):
     STATUS_CHOICES = [
         ('open', 'Open'),

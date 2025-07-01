@@ -47,6 +47,10 @@ class AdminRegisterSerializer(serializers.ModelSerializer):
             password=password,
             **validated_data
         )
+
+        user.is_staff = True
+        user.save()
+
         token_obj.used = True
         token_obj.save()
         return user

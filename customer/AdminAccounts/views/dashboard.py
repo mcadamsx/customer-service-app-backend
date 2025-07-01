@@ -1,57 +1,70 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.utils.timezone import now
-from django.db.models import Count
 from datetime import timedelta
-from ..models import AdminUser
-from django.db.models.functions import TruncMonth
-from AdminAccounts.models import Customer, Ticket
-from AdminAccounts.models import Service
-from ..serializers.dashboard import AdminDashboardSerializer
+from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
+
+from AdminAccounts.models import Customer, Ticket, SubAdmin
 
 
-class AdminDashboardView(APIView):
-    permission_classes = [IsAuthenticated]
+def calc_percent_change(current, previous):
+    if previous == 0:
+        return 0
+    return round(((current - previous) / previous) * 100, 2)
 
-    def get(self, request):
-        today = now().date()
-        one_week_ago = today - timedelta(days=7)
-        current_year = today.year
 
-        verified_customers = Customer.objects.filter(is_online=True).count()
-        new_customers = (
-            Customer.objects.filter(date_joined__gte=one_week_ago).count())
-        open_tickets = (Ticket.objects.filter(status="open").count())
-        sub_admin_count = (
-            AdminUser.objects.filter(is_staff=True, is_superuser=False).count()
-            )
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def dashboard_summary(request):
+    now = timezone.now()
+    thirty_days_ago = now - timedelta(days=30)
+    sixty_days_ago = now - timedelta(days=60)
 
-        top_services = (
-            Service.objects.annotate(customer_count=Count
-                                     ('customers')).order_by
-                                    ('-customer_count')[:5])
-        top_services_list = [service.name for service in top_services]
+    verified_current = Customer.objects.filter(is_verified=True).count()
+    verified_previous = Customer.objects.filter(
+        is_verified=True,
+        date_joined__range=(sixty_days_ago, thirty_days_ago)
+    ).count()
+    verified_percent = calc_percent_change(verified_current, verified_previous)
 
-        locations = (
-            Customer.objects.values_list('location', flat=True).distinct())
+    new_current = Customer.objects.filter(
+        date_joined__gte=thirty_days_ago
+    ).count()
+    new_previous = Customer.objects.filter(
+        date_joined__range=(sixty_days_ago, thirty_days_ago)
+    ).count()
+    new_percent = calc_percent_change(new_current, new_previous)
 
-        monthly_data = Customer.objects.filter(date_joined__year=current_year)\
-            .annotate(month=TruncMonth('date_joined')) \
-            .values('month') \
-            .annotate(count=Count('id')) \
-            .order_by('month')
-        yearly_activity = {item['month'].strftime("%B"): item['count']
-                           for item in monthly_data}
+    open_current = Ticket.objects.filter(status='open').count()
+    open_previous = Ticket.objects.filter(
+        status='open',
+        created_at__range=(sixty_days_ago, thirty_days_ago)
+    ).count()
+    open_percent = calc_percent_change(open_current, open_previous)
 
-        dashboard_data = {
-            "verified_customers": verified_customers,
-            "new_customers": new_customers,
-            "open_tickets": open_tickets,
-            "sub_admin_count": sub_admin_count,
-            "top_services": top_services_list,
-            "customer_locations": list(locations),
-            "yearly_activity": yearly_activity
+    subadmins_current = SubAdmin.objects.filter(is_active=True).count()
+    subadmins_previous = SubAdmin.objects.filter(
+        is_active=True,
+        created_at__range=(sixty_days_ago, thirty_days_ago)
+    ).count()
+    subadmins_percent = (
+        calc_percent_change(subadmins_current, subadmins_previous))
+
+    return Response({
+        "verified_customers": {
+            "count": verified_current,
+            "percent_change": verified_percent
+        },
+        "new_customers": {
+            "count": new_current,
+            "percent_change": new_percent
+        },
+        "open_tickets": {
+            "count": open_current,
+            "percent_change": open_percent
+        },
+        "sub_admins": {
+            "count": subadmins_current,
+            "percent_change": subadmins_percent
         }
-        serializer = AdminDashboardSerializer(dashboard_data)
-        return Response(serializer.data)
+    })

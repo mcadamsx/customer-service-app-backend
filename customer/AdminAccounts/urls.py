@@ -7,9 +7,7 @@ from .views.register_admin import (
     ResetPasswordView,
 )
 from AdminAccounts.views import dashboard
-from AdminAccounts.views.revenue_analytics import revenue_analytics
-from AdminAccounts.views.customer_activity import customer_activity_over_time
-from AdminAccounts.views.top_customers_locations import top_customer_locations
+from .views.dashboard import AdminDashboardView
 
 
 urlpatterns = [
@@ -20,12 +18,8 @@ urlpatterns = [
          name='forgot-password'),
     path('reset-password/<str:token>/', ResetPasswordView.as_view(),
          name='reset-password'),
-    path('dashboard-summary/', dashboard.dashboard_summary),
-    path('revenue-analytics/', revenue_analytics, name='revenue-analytics'),
-    path('customer-activity/', customer_activity_over_time,
-         name='customer-activity'),
-    path('customer-locations/', top_customer_locations,
-         name='top-customer-locations'),
+     path('dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
+
 
 
 ]

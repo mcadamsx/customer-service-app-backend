@@ -15,6 +15,12 @@ def generate_registration_token():
     return prefix + suffix
 
 
+def generate_customer_token():
+    prefix = 'CUS'
+    suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=9))
+    return prefix + suffix
+
+
 class AdminUserManager(BaseUserManager):
     def create_user(self, company_email, password=None, **extra_fields):
         if not company_email:
@@ -167,3 +173,24 @@ class SubAdmin(models.Model):
 
     def __str__(self):
         return self.full_name
+
+
+class CustomerInvitationToken(models.Model):
+    email = models.EmailField(unique=True)
+    full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    company_name = models.CharField(max_length=255)
+    token = models.CharField(
+        max_length=12,
+        unique=True,
+        default=generate_customer_token,
+        db_index=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(days=1)
+
+    def __str__(self):
+        return f"Token({self.token}) for {self.email}"

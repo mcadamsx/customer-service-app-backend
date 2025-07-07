@@ -1,25 +1,22 @@
 from django.urls import path
 from .views.invite_admin import InviteAdminUserView
-from .views.register_admin import RegisterAdminUserView
 from .views.register_admin import (
+    RegisterAdminUserView,
     AdminLoginView,
     ForgotPasswordView,
     ResetPasswordView,
 )
-from AdminAccounts.views import dashboard
 from .views.dashboard import AdminDashboardView
+from .views.invite_customer import InviteCustomerView
 
 
 urlpatterns = [
     path('invite/', InviteAdminUserView.as_view(), name='invite-admin'),
     path('register/', RegisterAdminUserView.as_view(), name='register-admin'),
     path('login/', AdminLoginView.as_view(), name='admin_login'),
-    path('forgot-password/', ForgotPasswordView.as_view(),
-         name='forgot-password'),
-    path('reset-password/<str:token>/', ResetPasswordView.as_view(),
-         name='reset-password'),
-     path('dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
-
-
+    path('forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
+    path('reset-password/<str:token>/', ResetPasswordView.as_view(), name='reset-password'),
+    path('dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
+    path('invite-customer/', InviteCustomerView.as_view(), name='invite-customer'),
 
 ]

@@ -16,7 +16,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "5e54-196-61-44-164.ngrok-free.app",
+    "2586923ee3d8.ngrok-free.app",
 ]
 
 INSTALLED_APPS = [
@@ -60,7 +60,7 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://5e54-196-61-44-164.ngrok-free.app",
+    "https://2586923ee3d8.ngrok-free.app",
 ]
 
 CORS_ALLOW_HEADERS = [

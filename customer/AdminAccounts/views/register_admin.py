@@ -5,6 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from datetime import timedelta
 from AdminAccounts.models import AdminUser
+from AdminAccounts.models import AdminEmailVerificationToken
 
 from ..models import PasswordResetToken
 from AdminAccounts.serializers.auth import (
@@ -21,9 +22,49 @@ class RegisterAdminUserView(APIView):
         serializer = AdminRegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Admin registered successfully."},
-                            status=201)
+            return Response(
+                {
+                    "message": (
+                        "Admin registered successfully. "
+                        "Please check your email to verify your account"
+                    )
+                },
+                status=201
+            )
         return Response(serializer.errors, status=400)
+
+
+class AdminEmailVerificationView(APIView):
+    def get(self, request):
+        token = request.GET.get('token')
+
+        if not token:
+            return Response(
+                {"detail": "Token is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            token_obj = AdminEmailVerificationToken.objects.get(token=token)
+        except AdminEmailVerificationToken.DoesNotExist:
+            return Response(
+                {"detail": "Invalid or expired token."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = token_obj.user
+              
+        user.is_verified = True
+        user.is_active = True  # You can omit this if users are created active by default
+        user.save()
+
+        # Optionally delete the token
+        token_obj.delete()
+
+        return Response(
+            {"message": "Email verified successfully. You can now log in."},
+            status=status.HTTP_200_OK
+        )
 
 
 class AdminLoginView(APIView):

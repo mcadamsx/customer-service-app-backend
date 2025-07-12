@@ -8,7 +8,7 @@ from django.db.models.functions import TruncMonth
 from collections import defaultdict
 from calendar import month_name
 
-from ..models import Customer, Ticket, SubAdmin, Payment
+from ..models import CustomerUser, Ticket, SubAdmin, Payment
 
 
 def calc_percent_change(current, previous):
@@ -21,6 +21,7 @@ class AdminDashboardView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        admin = request.user
         now = timezone.now()
         thirty_days_ago = now - timedelta(days=30)
         sixty_days_ago = now - timedelta(days=60)
@@ -33,41 +34,48 @@ class AdminDashboardView(APIView):
         start_of_year = now.replace(year=selected_year, month=1, day=1, hour=0, minute=0, second=0)
         end_of_year = now.replace(year=selected_year, month=12, day=31, hour=23, minute=59, second=59)
 
-        verified_current = Customer.objects.filter(is_verified=True).count()
-        verified_previous = Customer.objects.filter(
+        verified_current = CustomerUser.objects.filter(is_verified=True, invited_by=admin).count()
+        verified_previous = CustomerUser.objects.filter(
             is_verified=True,
+            invited_by=admin,
             date_joined__range=(sixty_days_ago, thirty_days_ago)
         ).count()
         verified_percent = calc_percent_change(verified_current, verified_previous)
 
-        new_current = Customer.objects.filter(date_joined__gte=thirty_days_ago).count()
-        new_previous = Customer.objects.filter(
-            date_joined__range=(sixty_days_ago, thirty_days_ago)
+        new_current = CustomerUser.objects.filter(date_joined__gte=thirty_days_ago, invited_by=admin).count()
+        new_previous = CustomerUser.objects.filter(
+            date_joined__range=(sixty_days_ago, thirty_days_ago),
+            invited_by=admin
         ).count()
         new_percent = calc_percent_change(new_current, new_previous)
 
-        open_current = Ticket.objects.filter(status='open').count()
+        open_current = Ticket.objects.filter(status='open', customer__invited_by=admin).count()
         open_previous = Ticket.objects.filter(
             status='open',
-            created_at__range=(sixty_days_ago, thirty_days_ago)
+            created_at__range=(sixty_days_ago, thirty_days_ago),
+            customer__invited_by=admin
         ).count()
         open_percent = calc_percent_change(open_current, open_previous)
 
-        subadmins_current = SubAdmin.objects.filter(is_active=True).count()
+        subadmins_current = SubAdmin.objects.filter(is_active=True, created_by=admin).count()
         subadmins_previous = SubAdmin.objects.filter(
             is_active=True,
+            created_by=admin,
             created_at__range=(sixty_days_ago, thirty_days_ago)
         ).count()
         subadmins_percent = calc_percent_change(subadmins_current, subadmins_previous)
 
-        # ---------- Section 2: Revenue Chart Data ----------
+        # ---------- Revenue Chart ----------
         revenue_qs = (
-            Payment.objects.filter(created_at__range=(start_of_year, end_of_year))
+            Payment.objects.filter(
+                created_at__range=(start_of_year, end_of_year),
+                customer__invited_by=admin
+            )
             .annotate(month=TruncMonth('created_at'))
             .values('month', 'service__name')
             .annotate(total=Sum('amount'))
             .order_by('month')
-)
+        )
 
         revenue_data = defaultdict(lambda: [0] * 12)
         for entry in revenue_qs:
@@ -82,11 +90,13 @@ class AdminDashboardView(APIView):
                 row[service] = monthly_totals[i]
             revenue_chart_data.append(row)
 
-        monthly_customers = Customer.objects.filter(date_joined__year=selected_year) \
-            .annotate(month=TruncMonth('date_joined')) \
-            .values('month') \
-            .annotate(count=Count('id')) \
-            .order_by('month')
+        # ---------- Monthly Customer Signups ----------
+        monthly_customers = CustomerUser.objects.filter(
+            date_joined__year=selected_year,
+            invited_by=admin
+        ).annotate(
+            month=TruncMonth('date_joined')
+        ).values('month').annotate(count=Count('id')).order_by('month')
 
         customer_counts = [0] * 12
         for entry in monthly_customers:
@@ -98,17 +108,16 @@ class AdminDashboardView(APIView):
             "counts": customer_counts
         }
 
-        # ---------- Section 4: Top Locations ----------
-        total_customers = Customer.objects.count()
-        location_qs = Customer.objects.values('location') \
-            .annotate(count=Count('id')) \
-            .order_by('-count')[:5]
+        # ---------- Top Locations ----------
+        total_customers = CustomerUser.objects.filter(invited_by=admin).count()
+        location_qs = CustomerUser.objects.filter(invited_by=admin) \
+            .values('country').annotate(count=Count('id')).order_by('-count')[:5]
 
         top_locations = []
         for entry in location_qs:
             percent = (entry['count'] / total_customers) * 100 if total_customers > 0 else 0
             top_locations.append({
-                "country": entry['location'],
+                "country": entry['country'],
                 "percentage": round(percent, 2)
             })
 

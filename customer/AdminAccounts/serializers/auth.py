@@ -3,6 +3,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from ..models import PasswordResetToken
 from AdminAccounts.models import AdminUser, AdminSignupToken
+from AdminAccounts.models import AdminEmailVerificationToken
 
 
 class AdminRegisterSerializer(serializers.ModelSerializer):
@@ -53,6 +54,26 @@ class AdminRegisterSerializer(serializers.ModelSerializer):
 
         token_obj.used = True
         token_obj.save()
+
+        token = AdminEmailVerificationToken.generate_token()
+        AdminEmailVerificationToken.objects.create(user=user, token=token)
+
+        verification_url = (
+            f"http://localhost:8000/api/admin/verify-admin?token={token}"
+        )
+
+        send_mail(
+            subject="Verify your email",
+            message=(
+                f"Hi {user.company_name},\n\n"
+                f"Please click the link below to verify your email:\n"
+                f"{verification_url}\n"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.company_email],
+            fail_silently=False,
+        )
+
         return user
 
 

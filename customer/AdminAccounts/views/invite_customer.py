@@ -1,39 +1,45 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from django.conf import settings
-from ..serializers import CustomerInvitationSerializer
+from AdminAccounts.models import CustomerInvitationToken, AdminUser
 
 
 class InviteCustomerView(APIView):
-    """
-    Admin invites a customer via email with a registration token link.
-    """
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = CustomerInvitationSerializer(data=request.data)
+        if not isinstance(request.user, AdminUser):
+            return Response({"error": "Only admins can invite customers."}, status=403)
 
-        if serializer.is_valid():
-            invitation = serializer.save()
+        email = request.data.get("email")
+        full_name = request.data.get("full_name")
+        phone = request.data.get("phone", "")
+        company_name = request.data.get("company_name")
 
-            # Build token registration link
-            registration_link = f"https://your-admin.com/customer/register/{invitation.token}"
+        if not all([email, full_name, company_name]):
+            return Response({"error": "Email, full_name, and company_name are required."}, status=400)
 
-            # Send email
-            send_mail(
-                subject="You're invited to register",
-                message=(
-                    f"Hello {invitation.full_name},\n\n"
-                    f"You have been invited to register with {invitation.company_name}.\n"
-                    f"Click the link below to complete your registration:\n{registration_link}\n\n"
-                    f"This link will expire in 24 hours."
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[invitation.email],
-                fail_silently=False,
-            )
+        token_obj = CustomerInvitationToken.objects.create(
+            admin=request.user,
+            invited_by=request.user,
+            email=email,
+            full_name=full_name,
+            phone=phone,
+            company_name=company_name
+        )
 
-            return Response({"message": "Invitation sent successfully."}, status=status.HTTP_201_CREATED)
+        signup_link = f"http://localhost:8000/register-customer?token={token_obj.token}"
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        send_mail(
+            subject="Customer Registration Invite",
+            message=f"Hi {full_name},\n\nClick the link to register: {signup_link}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+        )
+
+        # ✅ Print to console
+        print(f"Invitation sent to {email}. Token: {token_obj.token}")
+
+        return Response({"message": f"Signup link sent to {email}."}, status=200)

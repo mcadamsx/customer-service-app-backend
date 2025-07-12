@@ -1,2 +1,3 @@
 from .customer_invitation import CustomerInvitationSerializer
 from ..serializers import CustomerInvitationSerializer
+from .customer_registration import CustomerRegistrationSerializer

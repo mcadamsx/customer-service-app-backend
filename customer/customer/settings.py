@@ -14,9 +14,9 @@ DEFAULT_FROM_EMAIL = 'noreply@yourdomain.com'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-    "2586923ee3d8.ngrok-free.app",
+    # "127.0.0.1",
+    # "localhost",
+    # "20ce2bde4e44.ngrok-free.app",
 ]
 
 INSTALLED_APPS = [
@@ -51,16 +51,17 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^http:\/\/localhost:5173$",
-    r"^https:\/\/[a-z0-9\-]+\.ngrok-free\.app$",
+    # r"^http:\/\/localhost:5173$",
+    # r"^https:\/\/[a-z0-9\-]+\.ngrok-free\.app$",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://2586923ee3d8.ngrok-free.app",
+    # "http://localhost:5173",
+    # "http://127.0.0.1:5173",
+    # "https://20ce2bde4e44.ngrok-free.app ",
+
 ]
 
 CORS_ALLOW_HEADERS = [

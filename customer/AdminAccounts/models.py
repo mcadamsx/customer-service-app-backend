@@ -170,27 +170,6 @@ class CustomerUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
-# class CustomerInvitationToken(models.Model):
-#     email = models.EmailField(unique=True)
-#     full_name = models.CharField(max_length=255)
-#     phone = models.CharField(max_length=20, blank=True)
-#     company_name = models.CharField(max_length=255)
-#     token = models.CharField(
-#         max_length=12,
-#         unique=True,
-#         default=generate_customer_token,
-#         db_index=True
-#     )
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     used = models.BooleanField(default=False)
-
-#     def is_expired(self):
-#         return timezone.now() > self.created_at + timedelta(days=1)
-
-#     def __str__(self):
-#         return f"Token({self.token}) for {self.email}"
-
-
 class CustomerInvitationToken(models.Model):
     admin = models.ForeignKey(
         AdminUser,
@@ -208,8 +187,7 @@ class CustomerInvitationToken(models.Model):
         db_index=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    used = models.BooleanField(default=False) 
-    # Change the related_name here to avoid conflict with CustomerUser
+    used = models.BooleanField(default=False)
     invited_by = models.ForeignKey(
         AdminUser,
         on_delete=models.CASCADE,
